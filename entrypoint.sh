@@ -65,6 +65,7 @@ declare -A REPOS=(
   ["rgthree-comfy"]="https://github.com/rgthree/rgthree-comfy.git"
   ["ComfyUI-KJNodes"]="https://github.com/kijai/ComfyUI-KJNodes.git"
   ["ComfyUI_UltimateSDUpscale"]="https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
+  ["comfy-pack"]="https://github.com/bentoml/comfy-pack.git"
 )
 
 if [ ! -f "$INIT_MARKER" ]; then

@@ -9,23 +9,28 @@ services:
     image: comfyui:latest
     container_name: comfyui
     ports:
-      - "8188:8188"
+      - "8189:8188"
     volumes:
-      # persist your models, output, and settings:
-      - c:/home/user/comfyui/models:/app/ComfyUI/models
+      # persist your models (using existing ComfyUI models folder):
+      - c:/Users/AKG_Research/LLM/ComfyUI_windows_portable_v2/ComfyUI/models:/app/ComfyUI/models
 
-      # persist your output images:
-      - c:/home/user/comfyui/output:/app/ComfyUI/output
+      # persist your output images (unique for this container):
+      - c:/Users/AKG_Research/comfyui/docker-output:/app/ComfyUI/output
       
       # persist all your settings & extra nodes:
-      - c:/home/user/comfyui/settings:/app/ComfyUI/user/default:rw
+      - c:/Users/AKG_Research/comfyui/settings:/app/ComfyUI/user/default:rw
 
       # persist just your saved flows (overrides the workflows/ in default):
-      - c:/home/user/comfyui/flows:/app/ComfyUI/user/default/workflows:rw
+      - c:/Users/AKG_Research/comfyui/flows:/app/ComfyUI/user/default/workflows:rw
     
-    runtime: nvidia
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
     stdin_open: true
     tty: true
     restart: unless-stopped
