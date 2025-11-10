@@ -9,16 +9,22 @@ This is a Docker setup for ComfyUI based on John Aldred's approach with modifica
 ```
 ComfyUI-Docker-1/
 ├── data/                          # Persistent data (gitignored)
-│   ├── models/                    # Model files
+│   ├── models/                    # SHARED: Model files (read-only)
 │   │   ├── checkpoints/          # Main SD models
 │   │   ├── vae/                  # VAE models
 │   │   ├── loras/                # LoRA models
 │   │   ├── controlnet/           # ControlNet models
 │   │   ├── upscale_models/       # Upscaler models
 │   │   └── embeddings/           # Textual Inversion embeddings
-│   ├── output/                    # Generated images
-│   ├── settings/                  # ComfyUI settings & custom nodes
-│   └── flows/                     # Saved workflows
+│   ├── input/                     # SHARED: Input images (read-only)
+│   ├── main/                      # Main instance data
+│   │   ├── custom_nodes/         # Custom nodes for main instance
+│   │   ├── user/                 # Workflows & settings for main instance
+│   │   └── output/               # Generated images for main instance
+│   └── test/                      # Test instance data
+│       ├── custom_nodes/         # Custom nodes for test instance
+│       ├── user/                 # Workflows & settings for test instance
+│       └── output/               # Generated images for test instance
 ├── Dockerfile                     # Container build instructions
 ├── docker-compose.yml             # Docker Compose configuration
 ├── entrypoint.sh                  # Container startup script
@@ -46,7 +52,61 @@ docker compose up -d
 ```
 
 ### 4. Access ComfyUI
-Open your browser to: http://localhost:8188
+- **Main instance** (comfyui-main): http://localhost:8189
+- **Test instance** (comfyui-test): http://localhost:8190
+
+## Multi-Instance Setup
+
+This configuration runs TWO ComfyUI instances that share the same models but have separate:
+- Custom nodes
+- Workflows and settings
+- Output folders
+
+### Why Multiple Instances?
+
+**Benefits:**
+- **Shared Models**: Large model files (GBs) are stored once and shared (read-only) across instances
+- **Isolated Testing**: Test new custom nodes or workflows without affecting your stable setup
+- **Parallel Workflows**: Run different workflows simultaneously on the same GPU
+- **Easy Rollback**: If instance2 breaks, instance1 is unaffected
+
+### Volume Strategy
+
+| Resource | Sharing | Mount Mode | Reason |
+|----------|---------|------------|--------|
+| Models | SHARED | Read-only (`:ro`) | Large files, rarely change, prevent accidents |
+| Input | SHARED | Read-only (`:ro`) | Reuse input images across instances |
+| Custom Nodes | ISOLATED | Read-write (`:rw`) | Test different node configurations |
+| Workflows/Settings | ISOLATED | Read-write (`:rw`) | Experiment with different workflows |
+| Outputs | ISOLATED | Read-write (`:rw`) | Keep outputs organized per instance |
+
+### Managing Instances
+
+**Start both instances:**
+```powershell
+docker compose up -d
+```
+
+**Start only main instance:**
+```powershell
+docker compose up -d comfyui-main
+```
+
+**Start only test instance:**
+```powershell
+docker compose up -d comfyui-test
+```
+
+**Stop specific instance:**
+```powershell
+docker compose stop comfyui-test
+```
+
+**View logs for specific instance:**
+```powershell
+docker logs comfyui-main -f
+docker logs comfyui-test -f
+```
 
 ## GPU Configuration
 

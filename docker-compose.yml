@@ -1,24 +1,71 @@
 # ComfyUI Docker Compose - Using lecode-official pre-built image
 # https://github.com/lecode-official/comfyui-docker
+#
+# Volume Strategy:
+# - Models: SHARED across all containers (large files, read-only for most use)
+# - Input: SHARED across all containers (read-only, reuse input images)
+# - Custom Nodes: SEPARATE per container (allows testing different node configs)
+# - Workflows: SEPARATE per container (allows different workflow experiments)
+# - Output: SEPARATE per container (keeps outputs organized)
 
 services:
-  comfyui:
+  comfyui-main:
     image: ghcr.io/lecode-official/comfyui-docker:latest
-    container_name: comfyui
+    container_name: comfyui-main
     ports:
       - "8189:8188"
     environment:
       - USER_ID=1000
       - GROUP_ID=1000
     volumes:
-      # persist your models:
-      - ./data/models:/opt/comfyui/models:rw
+      # SHARED: Models folder (read-only to prevent accidental changes)
+      - ./data/models:/opt/comfyui/models:ro
       
-      # persist custom nodes:
-      - ./data/custom_nodes:/opt/comfyui/custom_nodes:rw
+      # SHARED: Input folder (read-only, shared across instances)
+      - ./data/input:/opt/comfyui/input:ro
       
-      # persist outputs:
-      - ./data/output:/opt/comfyui/output:rw
+      # ISOLATED: Custom nodes for main instance
+      - ./data/main/custom_nodes:/opt/comfyui/custom_nodes:rw
+      
+      # ISOLATED: User data (workflows, settings, etc.)
+      - ./data/main/user:/opt/comfyui/user:rw
+      
+      # ISOLATED: Outputs for main instance
+      - ./data/main/output:/opt/comfyui/output:rw
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    restart: unless-stopped
+
+  comfyui-test:
+    image: ghcr.io/lecode-official/comfyui-docker:latest
+    container_name: comfyui-test
+    ports:
+      - "8190:8188"
+    environment:
+      - USER_ID=1000
+      - GROUP_ID=1000
+    volumes:
+      # SHARED: Same models folder (read-only)
+      - ./data/models:/opt/comfyui/models:ro
+      
+      # SHARED: Input folder (read-only, shared across instances)
+      - ./data/input:/opt/comfyui/input:ro
+      
+      # ISOLATED: Separate custom nodes for testing
+      - ./data/test/custom_nodes:/opt/comfyui/custom_nodes:rw
+      
+      # ISOLATED: Separate user data for testing
+      - ./data/test/user:/opt/comfyui/user:rw
+      
+      # ISOLATED: Separate outputs for testing
+      - ./data/test/output:/opt/comfyui/output:rw
     
     deploy:
       resources:
