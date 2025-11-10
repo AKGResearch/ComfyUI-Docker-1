@@ -1,0 +1,8 @@
+# Data directories (persistent volumes)
+data/
+
+# Docker volumes
+models/
+output/
+settings/
+flows/

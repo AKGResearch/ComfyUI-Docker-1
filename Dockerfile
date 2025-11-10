@@ -2,19 +2,27 @@
 # https://www.johnaldred.com
 # https://github.com/kaouthia
 
-# Use a minimal Python base image (adjust version as needed)
-FROM python:3.12-slim-bookworm
+# Use NVIDIA CUDA base image with Python for GPU support
+# Using CUDA 12.1 devel image with cuDNN for PyTorch compatibility
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 # Allow passing in your host UID/GID (defaults 1000:1000)
 ARG UID=1000
 ARG GID=1000
 
-# Install OS deps and create the non-root user
+# Install Python 3.10 and OS deps, create the non-root user
 RUN apt-get update \
- && apt-get install -y --no-install-recommends git \
+ && apt-get install -y --no-install-recommends \
+      git \
+      python3 \
+      python3-pip \
+      python3-venv \
  && groupadd --gid ${GID} appuser \
  && useradd --uid ${UID} --gid ${GID} --create-home --shell /bin/bash appuser \
  && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3 as default python command
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
 # Install Mesa/GL and GLib so OpenCV can load libGL.so.1 for ComfyUI-VideoHelperSuite
 RUN apt-get update \
@@ -45,7 +53,10 @@ RUN git clone https://github.com/comfyanonymous/ComfyUI.git
 # Change directory to the ComfyUI folder
 WORKDIR /app/ComfyUI
 
-# Install ComfyUI dependencies
+# Install PyTorch with CUDA 12.1 support first (more stable for Docker)
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Install remaining ComfyUI dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # (Optional) Clean up pip cache to reduce image size
