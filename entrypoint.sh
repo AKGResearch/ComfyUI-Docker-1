@@ -123,7 +123,7 @@ if [ ! -f "$INIT_MARKER" ]; then
     req="$dir/requirements.txt"
     if [ -f "$req" ]; then
       echo "  ↳ pip install --upgrade -r $req"
-      python -m pip install --no-cache-dir --upgrade -r "$req"
+      python -m pip install --no-cache-dir --upgrade -r "$req" || echo "  ⚠ Some packages failed for $dir (continuing)"
     fi
   done
 
