@@ -59,6 +59,7 @@ CN_DIR=/app/ComfyUI/custom_nodes
 INIT_MARKER="$CN_DIR/.custom_nodes_initialized"
 
 declare -A REPOS=(
+  # --- Core Nodes ---
   ["ComfyUI-Manager"]="https://github.com/ltdrdata/ComfyUI-Manager.git"
   ["ComfyUI_essentials"]="https://github.com/cubiq/ComfyUI_essentials.git"
   ["ComfyUI-Crystools"]="https://github.com/crystian/ComfyUI-Crystools.git"
@@ -66,6 +67,20 @@ declare -A REPOS=(
   ["ComfyUI-KJNodes"]="https://github.com/kijai/ComfyUI-KJNodes.git"
   ["ComfyUI_UltimateSDUpscale"]="https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
   ["comfy-pack"]="https://github.com/bentoml/comfy-pack.git"
+  
+  # --- 3D GenAI Nodes ---
+  # ComfyUI-3D-Pack: Comprehensive 3D suite (Hunyuan3D, PartCrafter, TripoSR, InstantMesh, 3DGS)
+  # NOTE: Requires CUDA 12.4+, Python 3.12, and build tools. May need manual setup.
+  ["ComfyUI-3D-Pack"]="https://github.com/MrForExample/ComfyUI-3D-Pack.git"
+  
+  # 3D Gaussian Splatting renderer (lightweight, uses Forge/THREE.js)
+  ["comfyui-3d-gs-renderer"]="https://github.com/swhsiang/comfyui-3d-gs-renderer.git"
+  
+  # ControlNet for depth/normal maps (useful for 3D-aware generation)
+  ["comfyui_controlnet_aux"]="https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+  
+  # Video helper for 3D animation workflows
+  ["ComfyUI-VideoHelperSuite"]="https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
 )
 
 if [ ! -f "$INIT_MARKER" ]; then

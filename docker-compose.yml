@@ -1,12 +1,18 @@
-# ComfyUI Docker Compose - Using lecode-official pre-built image
+# ComfyUI Docker Compose - 3D GenAI Enhanced Edition
 # https://github.com/lecode-official/comfyui-docker
 #
 # Volume Strategy:
 # - Models: SHARED across all containers (large files, read-only for most use)
+# - 3D Models: SHARED across all containers (Hunyuan3D, PartCrafter, etc.)
 # - Input: SHARED across all containers (read-only, reuse input images)
 # - Custom Nodes: SEPARATE per container (allows testing different node configs)
 # - Workflows: SEPARATE per container (allows different workflow experiments)
 # - Output: SEPARATE per container (keeps outputs organized)
+#
+# 3D GenAI Features:
+# - comfyui-3d: Dedicated container for 3D generation workflows
+# - ComfyUI-3D-Pack: Hunyuan3D, PartCrafter, TripoSR, InstantMesh, 3DGS
+# - comfyui-3d-gs-renderer: Gaussian Splatting visualization
 
 services:
   comfyui-main:
@@ -18,11 +24,11 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
     volumes:
-      # SHARED: Models folder (read-only to prevent accidental changes)
-      - ./data/models:/opt/comfyui/models:ro
+      # SHARED: Models folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/models:/opt/comfyui/models:ro
       
-      # SHARED: Input folder (read-only, shared across instances)
-      - ./data/input:/opt/comfyui/input:ro
+      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/input:/opt/comfyui/input:ro
       
       # ISOLATED: Custom nodes for main instance
       - ./data/main/custom_nodes:/opt/comfyui/custom_nodes:rw
@@ -52,11 +58,11 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
     volumes:
-      # SHARED: Same models folder (read-only)
-      - ./data/models:/opt/comfyui/models:ro
+      # SHARED: Models folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/models:/opt/comfyui/models:ro
       
-      # SHARED: Input folder (read-only, shared across instances)
-      - ./data/input:/opt/comfyui/input:ro
+      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/input:/opt/comfyui/input:ro
       
       # ISOLATED: Separate custom nodes for testing
       - ./data/test/custom_nodes:/opt/comfyui/custom_nodes:rw
@@ -66,6 +72,102 @@ services:
       
       # ISOLATED: Separate outputs for testing
       - ./data/test/output:/opt/comfyui/output:rw
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    restart: unless-stopped
+
+  # =============================================================================
+  # 3D GenAI Container - Using pre-built image (basic 3D support)
+  # =============================================================================
+  # Access: http://localhost:8191
+  # =============================================================================
+  comfyui-3d:
+    image: ghcr.io/lecode-official/comfyui-docker:latest
+    container_name: comfyui-3d
+    ports:
+      - "8191:8188"
+    environment:
+      - USER_ID=1000
+      - GROUP_ID=1000
+    volumes:
+      # SHARED: Models folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/models:/opt/comfyui/models:ro
+      
+      # SHARED: 3D model checkpoints (Hunyuan3D, PartCrafter, etc.)
+      - ./data/models_3d:/opt/comfyui/custom_nodes/ComfyUI-3D-Pack/Checkpoints:rw
+      
+      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/input:/opt/comfyui/input:ro
+      
+      # ISOLATED: Custom nodes for 3D instance (includes 3D-Pack)
+      - ./data/3d/custom_nodes:/opt/comfyui/custom_nodes:rw
+      
+      # ISOLATED: User data for 3D workflows
+      - ./data/3d/user:/opt/comfyui/user:rw
+      
+      # ISOLATED: 3D outputs (meshes, textures, splats)
+      - ./data/3d/output:/opt/comfyui/output:rw
+    
+    # Increased shared memory for 3D operations
+    shm_size: '8gb'
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    restart: unless-stopped
+
+  # =============================================================================
+  # 3D Test Container - Custom build with full 3D-Pack support
+  # =============================================================================
+  # Features: CUDA 12.4, Python 3.12, gcc/g++ for JIT compilation
+  # Supports: Hunyuan3D, PartCrafter, TripoSR, InstantMesh, 3DGS
+  # Access: http://localhost:8192
+  # Build: docker compose build comfyui-3d-test
+  # =============================================================================
+  comfyui-3d-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.3d
+      args:
+        UID: 1000
+        GID: 1000
+    image: comfyui-3d-genai:latest
+    container_name: comfyui-3d-test
+    ports:
+      - "8192:8188"
+    volumes:
+      # SHARED: Models folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/models:/app/ComfyUI/models:ro
+      
+      # SHARED: 3D model checkpoints
+      - ./data/models_3d:/app/ComfyUI/custom_nodes/ComfyUI-3D-Pack/Checkpoints:rw
+      
+      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/input:/app/ComfyUI/input:ro
+      
+      # ISOLATED: Custom nodes for 3D test instance
+      - ./data/3d_test/custom_nodes:/app/ComfyUI/custom_nodes:rw
+      
+      # ISOLATED: User data for 3D test workflows
+      - ./data/3d_test/user:/app/ComfyUI/user:rw
+      
+      # ISOLATED: 3D test outputs
+      - ./data/3d_test/output:/app/ComfyUI/output:rw
+    
+    # Increased shared memory for 3D operations
+    shm_size: '16gb'
     
     deploy:
       resources:

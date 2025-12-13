@@ -1,0 +1,130 @@
+# ComfyUI 3D GenAI Dockerfile
+# Optimized for ComfyUI-3D-Pack with full 3D generation support
+# CUDA 12.4, Python 3.12, gcc/g++ for JIT compilation
+
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+# Build arguments
+ARG UID=1000
+ARG GID=1000
+ARG PYTHON_VERSION=3.12
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install system dependencies including build tools for 3D-Pack
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Python and basic tools
+    software-properties-common \
+    curl \
+    wget \
+    git \
+    git-lfs \
+    # Build tools required for ComfyUI-3D-Pack JIT compilation
+    build-essential \
+    gcc \
+    g++ \
+    cmake \
+    ninja-build \
+    # OpenGL/Mesa for 3D rendering
+    libgl1 \
+    libglx-mesa0 \
+    libglib2.0-0 \
+    libegl1-mesa-dev \
+    libgles2-mesa-dev \
+    mesa-common-dev \
+    # Additional libraries for 3D processing
+    libglfw3-dev \
+    libglew-dev \
+    libassimp-dev \
+    libboost-all-dev \
+    libgtk-3-dev \
+    libopencv-dev \
+    # Fonts
+    fonts-dejavu-core \
+    fontconfig \
+    # FFmpeg for video processing
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add deadsnakes PPA and install Python 3.12
+RUN add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python${PYTHON_VERSION} \
+        python${PYTHON_VERSION}-dev \
+        python${PYTHON_VERSION}-venv \
+        python${PYTHON_VERSION}-distutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.12 as default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1
+
+# Install pip for Python 3.12
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
+
+# Create non-root user
+RUN groupadd --gid ${GID} appuser \
+    && useradd --uid ${UID} --gid ${GID} --create-home --shell /bin/bash appuser
+
+# Set environment variables
+ENV PATH=/home/appuser/.local/bin:$PATH
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=${CUDA_HOME}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
+ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0"
+
+# Copy entrypoint script
+COPY entrypoint.3d.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Switch to non-root user for remaining operations
+USER ${UID}:${GID}
+
+# Set working directory
+WORKDIR /app
+
+# Clone ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI.git
+
+WORKDIR /app/ComfyUI
+
+# Install PyTorch with CUDA 12.4 support
+RUN pip install --no-cache-dir --user \
+    torch==2.5.1+cu124 \
+    torchvision==0.20.1+cu124 \
+    torchaudio==2.5.1+cu124 \
+    --index-url https://download.pytorch.org/whl/cu124
+
+# Install ComfyUI requirements
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Pre-install some 3D-Pack dependencies to speed up first run
+RUN pip install --no-cache-dir --user \
+    numpy \
+    scipy \
+    trimesh \
+    pyglet \
+    pyrender \
+    open3d \
+    plyfile \
+    imageio \
+    imageio-ffmpeg \
+    einops \
+    transformers \
+    accelerate \
+    safetensors \
+    huggingface_hub \
+    xformers
+
+# Clean up pip cache
+RUN pip cache purge || true
+
+# Expose ComfyUI port
+EXPOSE 8188
+
+# Run entrypoint then start ComfyUI
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["python", "/app/ComfyUI/main.py", "--listen", "0.0.0.0"]
