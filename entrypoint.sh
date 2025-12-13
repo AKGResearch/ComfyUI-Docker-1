@@ -59,13 +59,49 @@ CN_DIR=/app/ComfyUI/custom_nodes
 INIT_MARKER="$CN_DIR/.custom_nodes_initialized"
 
 declare -A REPOS=(
+  # --- Core Management ---
   ["ComfyUI-Manager"]="https://github.com/ltdrdata/ComfyUI-Manager.git"
+  
+  # --- Essential Utilities ---
   ["ComfyUI_essentials"]="https://github.com/cubiq/ComfyUI_essentials.git"
   ["ComfyUI-Crystools"]="https://github.com/crystian/ComfyUI-Crystools.git"
   ["rgthree-comfy"]="https://github.com/rgthree/rgthree-comfy.git"
   ["ComfyUI-KJNodes"]="https://github.com/kijai/ComfyUI-KJNodes.git"
   ["ComfyUI_UltimateSDUpscale"]="https://github.com/ssitu/ComfyUI_UltimateSDUpscale.git"
   ["comfy-pack"]="https://github.com/bentoml/comfy-pack.git"
+  
+  # --- Video Generation (WAN, Mochi, LTX) ---
+  ["ComfyUI-VideoHelperSuite"]="https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
+  ["ComfyUI-MochiWrapper"]="https://github.com/kijai/ComfyUI-MochiWrapper.git"
+  ["ComfyUI-LTXVideo"]="https://github.com/Lightricks/ComfyUI-LTXVideo.git"
+  ["ComfyUI-Frame-Interpolation"]="https://github.com/Fannovel16/ComfyUI-Frame-Interpolation.git"
+  
+  # --- Image Processing & ControlNet ---
+  ["ComfyUI-Impact-Pack"]="https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+  ["ComfyUI-IPAdapter-plus"]="https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
+  ["ComfyUI-Advanced-ControlNet"]="https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git"
+  ["comfyui_controlnet_aux"]="https://github.com/Fannovel16/comfyui_controlnet_aux.git"
+  
+  # --- Segmentation & Detection ---
+  ["ComfyUI-segment-anything-2"]="https://github.com/kijai/ComfyUI-segment-anything-2.git"
+  ["ComfyUI-Florence2"]="https://github.com/kijai/ComfyUI-Florence2.git"
+  
+  # --- UI & String Utilities ---
+  ["ComfyUI-pysssss"]="https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git"
+  ["comfy-mtb"]="https://github.com/melMass/comfy_mtb.git"
+  ["ComfyUI-mxToolkit"]="https://github.com/Smirnov75/ComfyUI-mxToolkit.git"
+  ["was-node-suite-comfyui"]="https://github.com/WASasquatch/was-node-suite-comfyui.git"
+  
+  # --- GGUF Model Support ---
+  ["ComfyUI-GGUF"]="https://github.com/city96/ComfyUI-GGUF.git"
+  
+  # --- Inpainting & Masking ---
+  ["ComfyUI-Inpaint-CropAndStitch"]="https://github.com/lquesada/ComfyUI-Inpaint-CropAndStitch.git"
+  ["comfyui-tooling-nodes"]="https://github.com/Acly/comfyui-tooling-nodes.git"
+  
+  # --- Face/Detail Enhancement (ADetailer-like) ---
+  ["ComfyUI-Impact-Subpack"]="https://github.com/ltdrdata/ComfyUI-Impact-Subpack.git"
+  ["ComfyUI-Inspire-Pack"]="https://github.com/ltdrdata/ComfyUI-Inspire-Pack.git"
 )
 
 if [ ! -f "$INIT_MARKER" ]; then

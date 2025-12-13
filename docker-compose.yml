@@ -1,5 +1,5 @@
-# ComfyUI Docker Compose - Using lecode-official pre-built image
-# https://github.com/lecode-official/comfyui-docker
+# ComfyUI Docker Compose - Custom build with video workflow support
+# Based on: https://github.com/lecode-official/comfyui-docker
 #
 # Volume Strategy:
 # - Models: SHARED across all containers (large files, read-only for most use)
@@ -10,7 +10,10 @@
 
 services:
   comfyui-main:
-    image: ghcr.io/lecode-official/comfyui-docker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: comfyui-custom:latest
     container_name: comfyui-main
     ports:
       - "8189:8188"
@@ -18,20 +21,20 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
     volumes:
-      # SHARED: Models folder (read-only to prevent accidental changes)
-      - ./data/models:/opt/comfyui/models:ro
+      # SHARED: Models folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/models:/app/ComfyUI/models:ro
       
-      # SHARED: Input folder (read-only, shared across instances)
-      - ./data/input:/opt/comfyui/input:ro
+      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/input:/app/ComfyUI/input:ro
       
       # ISOLATED: Custom nodes for main instance
-      - ./data/main/custom_nodes:/opt/comfyui/custom_nodes:rw
+      - ./data/main/custom_nodes:/app/ComfyUI/custom_nodes:rw
       
       # ISOLATED: User data (workflows, settings, etc.)
-      - ./data/main/user:/opt/comfyui/user:rw
+      - ./data/main/user:/app/ComfyUI/user:rw
       
       # ISOLATED: Outputs for main instance
-      - ./data/main/output:/opt/comfyui/output:rw
+      - ./data/main/output:/app/ComfyUI/output:rw
     
     deploy:
       resources:
@@ -52,11 +55,11 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
     volumes:
-      # SHARED: Same models folder (read-only)
-      - ./data/models:/opt/comfyui/models:ro
+      # SHARED: Models folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/models:/opt/comfyui/models:ro
       
-      # SHARED: Input folder (read-only, shared across instances)
-      - ./data/input:/opt/comfyui/input:ro
+      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
+      - D:/Projects/Diffusion/input:/opt/comfyui/input:ro
       
       # ISOLATED: Separate custom nodes for testing
       - ./data/test/custom_nodes:/opt/comfyui/custom_nodes:rw
