@@ -84,39 +84,44 @@ services:
     restart: unless-stopped
 
   # =============================================================================
-  # 3D GenAI Container - Using pre-built image (basic 3D support)
+  # 3D GenAI Container - Custom build with TRELLIS, 3D-Pack, Gaussian Splatting
   # =============================================================================
+  # Features: CUDA 12.4, Python 3.12, kaolin, nvdiffrast, diffoctreerast
+  # Supports: TRELLIS, Hunyuan3D, PartCrafter, TripoSR, InstantMesh, 3DGS
   # Access: http://localhost:8191
   # =============================================================================
   comfyui-3d:
-    image: ghcr.io/lecode-official/comfyui-docker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.3d
+      args:
+        UID: 1000
+        GID: 1000
+    image: comfyui-3d-genai:latest
     container_name: comfyui-3d
     ports:
       - "8191:8188"
-    environment:
-      - USER_ID=1000
-      - GROUP_ID=1000
     volumes:
       # SHARED: Models folder from D:\Projects\Diffusion (read-only)
-      - D:/Projects/Diffusion/models:/opt/comfyui/models:ro
+      - D:/Projects/Diffusion/models:/app/ComfyUI/models:ro
       
-      # SHARED: 3D model checkpoints (Hunyuan3D, PartCrafter, etc.)
-      - ./data/models_3d:/opt/comfyui/custom_nodes/ComfyUI-3D-Pack/Checkpoints:rw
+      # SHARED: 3D model checkpoints (Hunyuan3D, PartCrafter, TRELLIS, etc.)
+      - ./data/models_3d:/app/ComfyUI/custom_nodes/ComfyUI-3D-Pack/Checkpoints:rw
       
       # SHARED: Input folder from D:\Projects\Diffusion (read-only)
-      - D:/Projects/Diffusion/input:/opt/comfyui/input:ro
+      - D:/Projects/Diffusion/input:/app/ComfyUI/input:ro
       
-      # ISOLATED: Custom nodes for 3D instance (includes 3D-Pack)
-      - ./data/3d/custom_nodes:/opt/comfyui/custom_nodes:rw
+      # ISOLATED: Custom nodes for 3D instance
+      - ./data/3d/custom_nodes:/app/ComfyUI/custom_nodes:rw
       
       # ISOLATED: User data for 3D workflows
-      - ./data/3d/user:/opt/comfyui/user:rw
+      - ./data/3d/user:/app/ComfyUI/user:rw
       
       # ISOLATED: 3D outputs (meshes, textures, splats)
-      - ./data/3d/output:/opt/comfyui/output:rw
+      - ./data/3d/output:/app/ComfyUI/output:rw
     
     # Increased shared memory for 3D operations
-    shm_size: '8gb'
+    shm_size: '16gb'
     
     deploy:
       resources:

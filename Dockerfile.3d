@@ -55,7 +55,6 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y \
         python${PYTHON_VERSION} \
         python${PYTHON_VERSION}-dev \
         python${PYTHON_VERSION}-venv \
-        python${PYTHON_VERSION}-distutils \
     && rm -rf /var/lib/apt/lists/*
 
 # Set Python 3.12 as default
@@ -101,7 +100,7 @@ RUN pip install --no-cache-dir --user \
 # Install ComfyUI requirements
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Pre-install some 3D-Pack dependencies to speed up first run
+# Pre-install 3D-Pack and TRELLIS dependencies
 RUN pip install --no-cache-dir --user \
     numpy \
     scipy \
@@ -117,10 +116,32 @@ RUN pip install --no-cache-dir --user \
     accelerate \
     safetensors \
     huggingface_hub \
-    xformers
+    xformers \
+    diffusers
 
-# Clean up pip cache
-RUN pip cache purge || true
+# Install kaolin for 3D operations (NVIDIA)
+RUN pip install --no-cache-dir --user \
+    kaolin -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.5.1_cu124.html || \
+    echo "Kaolin installation failed - will retry at runtime"
+
+# Clone and install nvdiffrast (NVIDIA differentiable rasterizer)
+RUN mkdir -p /tmp/extensions && \
+    git clone https://github.com/NVlabs/nvdiffrast.git /tmp/extensions/nvdiffrast && \
+    pip install --no-cache-dir --user /tmp/extensions/nvdiffrast || \
+    echo "nvdiffrast installation failed - will retry at runtime"
+
+# Clone and install diffoctreerast (for TRELLIS)
+RUN git clone --recurse-submodules https://github.com/JeffreyXiang/diffoctreerast.git /tmp/extensions/diffoctreerast && \
+    pip install --no-cache-dir --user /tmp/extensions/diffoctreerast || \
+    echo "diffoctreerast installation failed - will retry at runtime"
+
+# Clone and install diff-gaussian-rasterization (for 3D Gaussian Splatting)
+RUN git clone https://github.com/autonomousvision/mip-splatting.git /tmp/extensions/mip-splatting && \
+    pip install --no-cache-dir --user /tmp/extensions/mip-splatting/submodules/diff-gaussian-rasterization/ || \
+    echo "diff-gaussian-rasterization installation failed - will retry at runtime"
+
+# Clean up build artifacts
+RUN rm -rf /tmp/extensions && pip cache purge || true
 
 # Expose ComfyUI port
 EXPOSE 8188

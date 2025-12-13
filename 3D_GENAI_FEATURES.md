@@ -30,7 +30,16 @@ The most comprehensive 3D node suite for ComfyUI. Supports:
 - Visual Studio Build Tools (for JIT compilation)
 - Pre-builds available for automatic installation
 
-### 2. ComfyUI-3D-GS-Renderer
+### 2. ComfyUI_TRELLIS (Microsoft)
+**Repository:** https://github.com/smthemex/ComfyUI_TRELLIS
+
+Microsoft's TRELLIS for high-quality image-to-3D generation:
+- Structured LATent (SLAT) representation
+- Outputs: Radiance Fields, 3D Gaussians, Meshes (GLB)
+- Text-to-3D and Mesh-to-3D support
+- Requires: kaolin, nvdiffrast, diffoctreerast, spconv
+
+### 3. ComfyUI-3D-GS-Renderer
 **Repository:** https://github.com/swhsiang/comfyui-3d-gs-renderer
 
 Lightweight Gaussian Splatting renderer using Forge/THREE.js:
@@ -38,7 +47,7 @@ Lightweight Gaussian Splatting renderer using Forge/THREE.js:
 - Real-time rendering in browser
 - Good for previewing and iterating on 3D spaces
 
-### 3. 360° Panorama Workflow
+### 4. 360° Panorama Workflow
 **Source:** https://yonlog.substack.com/p/create-360-ai-panoramas-comfyui-3d-lookdev
 
 Workflow for environment design:
@@ -47,7 +56,7 @@ Workflow for environment design:
 3. Project back into 3D using spherical mapping
 4. Iterate on materials, textures, lighting
 
-### 4. Blender + ComfyUI Integration
+### 5. Blender + ComfyUI Integration
 **Source:** https://canadiantechnologymagazine.com/create-amazing-3d-scenes-blender-comfyui-ai/
 
 NVIDIA RTX 3D Guided Generative AI:

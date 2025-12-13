@@ -51,8 +51,15 @@ declare -A REPOS=(
   # --- 3D GenAI Nodes ---
   ["ComfyUI-3D-Pack"]="https://github.com/MrForExample/ComfyUI-3D-Pack.git"
   ["comfyui-3d-gs-renderer"]="https://github.com/swhsiang/comfyui-3d-gs-renderer.git"
+  
+  # --- TRELLIS (Microsoft) - Image to 3D ---
+  ["ComfyUI_TRELLIS"]="https://github.com/smthemex/ComfyUI_TRELLIS.git"
+  
+  # --- Supporting Nodes ---
   ["comfyui_controlnet_aux"]="https://github.com/Fannovel16/comfyui_controlnet_aux.git"
   ["ComfyUI-VideoHelperSuite"]="https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
+  ["ComfyUI-Florence2"]="https://github.com/kijai/ComfyUI-Florence2.git"
+  ["ComfyUI-Impact-Pack"]="https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
 )
 
 if [ ! -f "$INIT_MARKER" ]; then
@@ -102,12 +109,35 @@ if [ ! -f "$INIT_MARKER" ]; then
     cd /app/ComfyUI
   fi
 
+  # Install ComfyUI_TRELLIS (has special vox2seq extension)
+  if [ -d "$CN_DIR/ComfyUI_TRELLIS" ]; then
+    echo "  ↳ Installing ComfyUI_TRELLIS..."
+    cd "$CN_DIR/ComfyUI_TRELLIS"
+    
+    # Install requirements
+    if [ -f "requirements.txt" ]; then
+      echo "    ↳ Installing requirements.txt..."
+      python -m pip install --no-cache-dir --user -r requirements.txt 2>&1 | tail -5 || true
+    fi
+    
+    # Install vox2seq extension if present
+    if [ -d "extensions/vox2seq" ]; then
+      echo "    ↳ Installing vox2seq extension..."
+      mkdir -p /tmp/extensions
+      cp -r extensions/vox2seq /tmp/extensions/vox2seq
+      python -m pip install --no-cache-dir --user /tmp/extensions/vox2seq 2>&1 | tail -3 || true
+      rm -rf /tmp/extensions/vox2seq
+    fi
+    
+    cd /app/ComfyUI
+  fi
+
   # Install other node dependencies
   for dir in "$CN_DIR"/*/; do
     name=$(basename "$dir")
     
-    # Skip 3D-Pack (already handled)
-    if [ "$name" = "ComfyUI-3D-Pack" ]; then
+    # Skip nodes already handled above
+    if [ "$name" = "ComfyUI-3D-Pack" ] || [ "$name" = "ComfyUI_TRELLIS" ]; then
       continue
     fi
     
