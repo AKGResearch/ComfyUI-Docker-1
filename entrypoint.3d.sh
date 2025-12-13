@@ -60,6 +60,13 @@ declare -A REPOS=(
   ["ComfyUI-VideoHelperSuite"]="https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git"
   ["ComfyUI-Florence2"]="https://github.com/kijai/ComfyUI-Florence2.git"
   ["ComfyUI-Impact-Pack"]="https://github.com/ltdrdata/ComfyUI-Impact-Pack.git"
+  
+  # --- 360° Panorama Nodes ---
+  ["ComfyUI_IPAdapter_plus"]="https://github.com/cubiq/ComfyUI_IPAdapter_plus.git"
+  ["ComfyUI-Advanced-ControlNet"]="https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet.git"
+  ["comfy_mtb"]="https://github.com/melMass/comfy_mtb.git"
+  ["ComfyMath"]="https://github.com/evanspearman/ComfyMath.git"
+  ["ComfyUI_preview360panorama"]="https://github.com/ProGamerGov/ComfyUI_preview360panorama.git"
 )
 
 if [ ! -f "$INIT_MARKER" ]; then
