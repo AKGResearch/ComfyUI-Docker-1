@@ -2,8 +2,8 @@
 # Based on: https://github.com/lecode-official/comfyui-docker
 #
 # Volume Strategy:
-# - Models: SHARED across all containers (large files, read-only for most use)
-# - Input: SHARED across all containers (read-only, reuse input images)
+# - Models: SHARED across all containers (large files, read-only for safety)
+# - Input: SHARED across all containers (read-write, allows uploads from UI)
 # - Custom Nodes: SEPARATE per container (allows testing different node configs)
 # - Workflows: SEPARATE per container (allows different workflow experiments)
 # - Output: SEPARATE per container (keeps outputs organized)
@@ -24,8 +24,8 @@ services:
       # SHARED: Models folder from D:\Projects\Diffusion (read-only)
       - D:/Projects/Diffusion/models:/app/ComfyUI/models:ro
       
-      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
-      - D:/Projects/Diffusion/input:/app/ComfyUI/input:ro
+      # SHARED: Input folder from D:\Projects\Diffusion (read-write for uploads)
+      - D:/Projects/Diffusion/input:/app/ComfyUI/input:rw
       
       # ISOLATED: Custom nodes for main instance
       - ./data/main/custom_nodes:/app/ComfyUI/custom_nodes:rw
@@ -58,8 +58,8 @@ services:
       # SHARED: Models folder from D:\Projects\Diffusion (read-only)
       - D:/Projects/Diffusion/models:/opt/comfyui/models:ro
       
-      # SHARED: Input folder from D:\Projects\Diffusion (read-only)
-      - D:/Projects/Diffusion/input:/opt/comfyui/input:ro
+      # SHARED: Input folder from D:\Projects\Diffusion (read-write for uploads)
+      - D:/Projects/Diffusion/input:/opt/comfyui/input:rw
       
       # ISOLATED: Separate custom nodes for testing
       - ./data/test/custom_nodes:/opt/comfyui/custom_nodes:rw
